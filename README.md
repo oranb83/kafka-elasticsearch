@@ -1,5 +1,17 @@
 # Flask, Kafka & ElasticSearch Playground
 
+## Description
+Build a webapi that will POST requests to kafka, consume the requests from kafka and will send the consumned requests to elasticsearch.
+The api will also support get requests from elasicsearch that will return a list of objects that matched a message that was previously sent to elastic.
+Note: if the message string done not exist in elastic, return empty list. 
+
+## How to run
+1. `git clone` this repo
+1. `cd` to this repo
+1. Run: `docker-compose up --build`
+1. Wait for the container to finish loading
+1. Run the http requests
+
 ## Using
 1. Flask - python HTTP server:
 
@@ -11,7 +23,7 @@
 1. `curl -X POST http://localhost:5000/message  -H 'content-type: text/plain' -d hello`
 1. `curl -X GET http://localhost:5000/message/hello`
 
-### Test Output for 5 POSTS
+### POST 5 messages with string "hello" and invoke GET from elastic
 ```
 [
     {
@@ -36,7 +48,7 @@
     }
 ]
 ```
-### Test Output for 0 POSTS
+### GET string "missing" from elastic without invoking the string via POST
 ```
 []
 ```
