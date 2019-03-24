@@ -7,7 +7,7 @@ logger = logging.Logger(__name__)
 
 class Elastic(object):
     def __init__(self):
-        self.es = Elasticsearch([{'host': 'localhost', 'port': 9200}])
+        self.es = Elasticsearch([{'host': 'elasticsearch', 'port': 9200}])
 
     def store_record(self, record, index_name='test'):
         try:
