@@ -39,12 +39,8 @@ services:
       memlock:
         soft: -1
         hard: -1
-    volumes:
-      - esdata:/usr/share/elasticsearch/data
     ports:
       - "9200:9200"
-    networks:
-      - esnet
 
   flaskapp:
     build: .
@@ -53,10 +49,3 @@ services:
       - '5000:5000'
     volumes:
       - .:/app
-
-volumes:
-  esdata:
-    driver: local
-
-networks:
-  esnet:
