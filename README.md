@@ -3,12 +3,13 @@
 ## Using
 1. Flask - python HTTP server:
 
-   * `POST localhost:8000/message` - Send message with string as raw data to Kafka, then consume kafka and send the data to ElasticSearch.
-   * `GET localhost:8000/message/<msg>` - Get all msg from ElasticSearch.
+   * `GET localhost:5000/health` - Health check for the web-server.
+   * `POST localhost:5000/message` - Send message with string as raw data to Kafka, then consume kafka and send the data to ElasticSearch.
+   * `GET localhost:5000/message/<msg>` - Get all msg from ElasticSearch.
 
 ### API tests via CURL
-1. `curl -X POST http://localhost:8000/message  -H 'content-type: text/plain' -d hello`
-1. `curl -X GET http://localhost:8000/message/hello`
+1. `curl -X POST http://localhost:5000/message  -H 'content-type: text/plain' -d hello`
+1. `curl -X GET http://localhost:5000/message/hello`
 
 ### Test Output for 5 POSTS
 ```

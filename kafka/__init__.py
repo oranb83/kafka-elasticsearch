@@ -1,3 +1,3 @@
 # Globals
-BROKER = 'localhost:29092'
+BROKER = 'kafka:29092'
 TOPIC = 'test'

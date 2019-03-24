@@ -21,5 +21,5 @@ RUN pip install -r requirements.txt
 
 # Run Application
 # ----------------
-EXPOSE 8081
+EXPOSE 5000
 CMD ["python", "/project/api.py"]
