@@ -28,7 +28,7 @@ def post_message():
     PRODUCER.send(request.data.decode('utf-8'))
     messages = CONSUMER.get()
     if not messages:
-        abort(400)
+        abort(500)
 
     for msg in messages:
         ELASTIC_SEARCH.store_record(msg)
