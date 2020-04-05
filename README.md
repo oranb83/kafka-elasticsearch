@@ -54,4 +54,4 @@ Note: if the message string done not exist in elastic, return empty list.
 ```
 
 ### Future Improvements
-Use `confluenting/kafka-connect-elasticsearch` to send data directly from kafka to ElasticSearch.
+Use `confluentinc/kafka-connect-elasticsearch` to send data directly from kafka to ElasticSearch.
