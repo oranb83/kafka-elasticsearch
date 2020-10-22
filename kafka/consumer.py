@@ -19,7 +19,7 @@ class Consumer(object):
         self.consumer.subscribe([TOPIC])
 
     def get(self):
-        # I'm using a loop in case some messages got stack in Kafka,
+        # I'm using a loop in case some messages got stuck in Kafka,
         # this is a rare case affected by issues with the kafka broker terminating unexpectedly.
         messages = []
         running = True
