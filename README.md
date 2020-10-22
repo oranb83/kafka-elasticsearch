@@ -3,7 +3,9 @@
 ## Description
 Build a webapi that will POST requests to kafka, consume the requests from kafka and will send the consumned requests to elasticsearch.
 The api will also support get requests from elasicsearch that will return a list of objects that matched a message that was previously sent to elastic.
-Note: if the message string done not exist in elastic, return empty list. 
+
+### Note 
+if the message string done not exist in elastic, return empty list. 
 
 ## How to run
 1. `git clone` this repo
