@@ -1,25 +1,23 @@
-# I didn't use the alphine version since there was no python wheel for Kafka, so I was forced to build it on my own.
-# This is obviosly something that I did many times, but it takes time and relevant when used on production.
-FROM python:3.7
+FROM python:3.7-alpine
 
 LABEL maintainer="Oran"
+WORKDIR /code
 
-# Update pip
+# Flask Setup
 # ----------------
-RUN pip install -U pip
+ENV FLASK_APP=app.py
+ENV FLASK_RUN_HOST=0.0.0.0
+RUN apk add --no-cache gcc musl-dev linux-headers
 
-
-# Copy application from local to WORKDIR
-# ----------------
-ADD . /project
-WORKDIR /project
+COPY requirements.txt requirements.txt
 
 # Install requirements
 # ----------------
+RUN pip install -U pip
 RUN pip install -r requirements.txt
-
 
 # Run Application
 # ----------------
 EXPOSE 5000
-CMD ["python", "/project/api.py"]
+COPY . .
+CMD ["flask", "run"]
