@@ -1,3 +1,0 @@
-hello foo bar this is a world2 or world of warcraft2
-hello foo bar this is, a world2 or world of warcraft
-hello, foo bar this, is a hi or world of warcraft
