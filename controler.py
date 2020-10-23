@@ -1,12 +1,13 @@
 import os
+import json
 import multiprocessing
 
 import validators
 
-from text_handler import UrlHandler, FileHandler, StringHandler
+from text_handler import UrlHandler, FileHandler, StringHandler, REDIS
 
 
-class Controler:
+class ControlerPost:
     """
     The Controler defines the interface of the view logic.
     """
@@ -45,9 +46,29 @@ class Controler:
         Counts sanitied words in text, file or URL (of txt file).
         """
         lines = self.strategy.read_lines()
-        pool = multiprocessing.Pool()
-        results = pool.map(self.strategy.count_words, lines)
+        pool = multiprocessing.Pool(multiprocessing.cpu_count())
+        # print(next(self.strategy.count_words(line)))
+        pool.map(self.strategy.count_words, lines)
         pool.close()
         pool.join()
 
-        return results
+
+class ControlerSearch:
+    """
+    The Controler defines the interface of the view logic.
+    """
+    def __init__(self, search, strategy=None):
+        """
+        @type search: list<str>
+        @param search: list of words to search.
+        """
+        self.search = search
+
+    def get_stats(self):
+        """
+        This method return word count stats.
+
+        @rtype: int
+        @return: word search appearance
+        """
+        return int(REDIS.get(self.search) or 0)

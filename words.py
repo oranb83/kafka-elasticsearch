@@ -14,12 +14,13 @@ class Words:
         foo
         foo-
         foo,
-        f.o,o
+        f-o,o
 
         invalid words => to valid words:
         me2           => me
-        m2,m.j        => m,m.j
-        m23@2j2       => m@j
+        m2,m.j        => m,mj
+        m2-3@2j2      => m-j
+        MXC#40-2m,    => mxc-m
     """
     def __init__(self):
         self._frequency = Counter()
@@ -33,15 +34,17 @@ class Words:
         @type line: str
         @param line: line of text
         """
-        line = self._sanities(line.lower())
+        line = self._sanities(line)
         self._count(line)
 
     def _sanities(self, line):
         """
         @type line: str
         @param line: line of text
+        @rtype: str
+        @return: sanitied string as seen in this class example.
         """
-        # Efficent way to remove digits and punctuation
+        # Efficent way to remove chars
         return line.lower().translate(REMOVE_CHARS)
 
     def _count(self, line):
@@ -50,3 +53,4 @@ class Words:
         @param line: line of text
         """
         self.frequency.update(line.split())
+

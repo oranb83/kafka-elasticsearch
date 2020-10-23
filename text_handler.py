@@ -1,6 +1,11 @@
 from abc import ABC, abstractmethod
 from urllib.request import urlopen
+
+import redis
+
 from words import Words
+
+REDIS = redis.Redis(host='redis', port=6379)
 
 
 class TextHandler(ABC):
@@ -19,13 +24,24 @@ class TextHandler(ABC):
         """
         @type line: str
         @param line: line of text
-        @rtype: Counter
-        @return: a Counter dict with a mapping of all the words in this line and there count
+        //@rtype: Counter
+        //@return: a Counter dict with a mapping of all the words in this line and there count
         """
         words = Words()
         words.count_words(line)
-
-        yield words.frequency
+        # Note: to avoid many IO calls to redis I chose to count the words of each line in memory.
+        #       That way I only push the aggregated words count into redis.
+        #       It's more efficent with bigger lines.
+        #       Working on an algorithem to decide when to push the data will take more
+        #       development time and testing.
+        #       Another option to consider will be to use redis pipelines and
+        #       incr each key by 1 once seen while pushing in bulk - need to invest time in
+        #       generating testing data and stress testing to see which approch is faster for
+        #       long/short lines.
+        with REDIS.pipeline() as pipe:
+            for key, value in words.frequency.items():
+                pipe.incrby(key, value)
+            pipe.execute()
 
     @abstractmethod
     def read_lines(self):
