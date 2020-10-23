@@ -107,3 +107,6 @@ ENV/
 
 # Mac
 *.idea/*
+
+# txt files
+*.txt
