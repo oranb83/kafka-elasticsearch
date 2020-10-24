@@ -1,12 +1,15 @@
+# NOTE:
+# I use a weak single redis cluster locally with bad performance, due to networking container.
+# I chose to do it only beacuse that way I can control all testing envrionments instead of
+# instructing how to install redis (with better performance) and pay for it in bugs per OS and
+# redis versions.
+# In real life I'll use muitiple redis clusters managed by redislabs on AWS based on past
+# experience. But even locally if I'll set serveral clusters I could just write every word with
+# redis pipeline (batch transaction) directly to redis and it whould have been much faster and
+# simpler than creating an in memory logic to count words and save to redis when a condition is met.
+
 import redis
 
-# NOTE: I use a weak single redis cluster locally with bad performance due to networking container.
-# I choose to do it only beacuse that way I can control all testing envrionments instead of
-# instructing to install redis (with better performance) and pay for it in bugs per OS and redis
-# versions. In real life I'll use muitiple redis clusters managed by redislabs on AWS - from past
-# experience if I had that opportonity I could just write every word with pipeline directly to
-# redis and it whould have been much faster and simpler than creating an in memory logic to count
-#  words and save to redis when a condition is met.
 
 class Redis:
     """
@@ -22,7 +25,8 @@ class Redis:
         @type counter: collections.Counter
         @param counter: dict => {word: num_of_appearance}
         """
-        # TODO: need to add try except and retries in case of connection issues
+        # TODO: need to add try except and retries in case of connection issues, not a problem
+        #       when connected to a single local redis cluster.
         with self.redis_client.pipeline() as pipe:
             for key, value in counter.items():
                 pipe.incrby(key, value)

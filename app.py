@@ -18,7 +18,7 @@ def health():
 
 
 @app.route(f'/{API_VERSION}/words/count/', methods=['POST'])
-def post_message():
+def post_text():
     if request.content_type != CONTENT_TYPE_TEXT:
         abort(400)
 
@@ -39,7 +39,7 @@ def post_message():
 
 
 @app.route(f'/{API_VERSION}/words/<word>/stats/')
-def get_messages(word):
+def get_word(word):
     if not word:
         abort(400)
 

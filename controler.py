@@ -1,7 +1,4 @@
 import os
-import json
-from concurrent.futures import ThreadPoolExecutor
-from itertools import islice
 
 import validators
 
