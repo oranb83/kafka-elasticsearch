@@ -18,13 +18,16 @@ Word counter REST API support 2 endpoints.
 1. Additional points: assumptions, notes, todo's are documented in the code.
 
 ### Note
-I tested the URL only with small files, but tested the filepaths with files of 400MB and 3.5GB, 12GB with ~100 unique words. If a test case fails it's easy to change the relevant constants (currently not in config although it should be) to support the new data, all under controler.py, start by reducing the `MAX_UNIQUE_KEYS`, but make sure you solved the redis bottleneck (it should be in the configuration - needs time to find out what parameters to change):
+I tested the URL only with small files, but tested the filepaths with files of 400MB, 1GB and 3GB with ~100 unique words. If a test case fails it's easy to change the relevant constants (currently not in config although it should be) to support the new data, all under controler.py, start by reducing the `MAX_UNIQUE_KEYS`, but make sure you solved the redis bottleneck (it should be in the redis config - need time to find out what parameters to change):
 * `LINES_TO_READ = 10000`
 * `MAX_UNIQUE_KEYS = 10000`
 
 ## How to run
 1. `git clone` this repo
 1. `cd` to this repo
+1. Move all test files into the repo:
+    * big files will effect the build time, if the build fails on very big files then I will need to fix the `docker-compose.yaml` to accept the filepath from a volume.
+    * You can always run `python app.py` for the API, download redis locally, start it and change the redis client in the code to accept localhost, but my way saves you the throuble.
 1. Run: `docker-compose up --build`
 1. Wait for the container to finish loading
 1. Run the http requests
