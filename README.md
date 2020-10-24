@@ -1,4 +1,4 @@
-# Word Counter
+# Words Counter
 
 ## Description
 Word counter REST API support 2 endpoints.
