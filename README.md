@@ -10,10 +10,11 @@ Word counter REST API support 2 endpoints.
 1. If the word not exist in the DB, I return zero.
 
 ### Assumptions on the input
-1. The input will be sanitied by removing digits and panctuations besides: `-` or `,` - they will be part of the word, meaning: `foo,` in this context will not be a match for `foo`. See additional examples in the code.
+1. The input will NOT be sanitied, I will do that by removing digits and panctuations besides: `-` or `,` or `'` - they will be part of the word, meaning: `it's,` in this context will not be a match for `it's` nor will be matched to `its,`. See additional examples in the code.
 1. The data uniqness is limited, there's a limited amount of words in the english langauge and only ~140k are used so on that I based my assumption. The more uniqness we will have the more we will need to do round trips to the DB which slows the operation.
-1. All the input lines have roughly the same chars, let's assume up to 1k (I tested for 2k). This assumption is based on english text that is rarely this big per line. I can support that as well, but it takes more development time and I prefered not to waste too much time on splitting the file words.
-1. A string (not filepaths or URLs) will always be short, few k's at most, otherwise it doesn't make sense not to pass a file.
+1. All the input lines have roughly the same amount of characters, let's assume up to 1k (I tested for 2k). This assumption is based on english text that is rarely this big per line. I can support that as well, but it takes more development time and I prefered not to waste too much time on splitting files into valid chunks of words.
+1. A string (not filepaths or URLs) will always be short, few k's at most, otherwise it doesn't make sense not to pass a file. It will be a decoded string.
+1. The file / urls will contain text and not binary files nor any other format like HTML, meaning I will not have to deal with decoding.
 1. Additional points: assumptions, notes, todo's are documented in the code.
 
 ### Note

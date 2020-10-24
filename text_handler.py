@@ -48,7 +48,7 @@ class FileHandler(TextHandler):
     def read_lines(self):
         with open(self.text) as fd:
             for line in fd:
-                yield line.decode('utf-8')
+                yield line
 
 
 class UrlHandler(FileHandler):
@@ -59,4 +59,4 @@ class UrlHandler(FileHandler):
     def read_lines(self):
         with urlopen(self.text) as fd:
            for line in fd:
-                yield line.decode('utf-8')
+                yield line
