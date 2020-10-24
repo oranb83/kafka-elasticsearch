@@ -1,11 +1,8 @@
 import time
-import logging
 from collections import Counter
 from string import digits, punctuation
 
 REMOVE_CHARS = str.maketrans('', '', digits + punctuation.replace('-', '').replace(',', ''))
-
-logger = logging.getLogger(__name__)
 
 
 class Words:

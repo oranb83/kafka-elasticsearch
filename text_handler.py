@@ -1,15 +1,8 @@
 import time
-import logging
 from abc import ABC, abstractmethod
 from urllib.request import urlopen
 
-# import redis
-
 from words import Words
-
-# REDIS = redis.Redis(host='redis', port=6379)
-
-logger = logging.getLogger(__name__)
 
 
 class TextHandler(ABC):
@@ -55,7 +48,7 @@ class FileHandler(TextHandler):
     def read_lines(self):
         with open(self.text) as fd:
             for line in fd:
-                yield line
+                yield line.decode('utf-8')
 
 
 class UrlHandler(FileHandler):
@@ -66,4 +59,4 @@ class UrlHandler(FileHandler):
     def read_lines(self):
         with urlopen(self.text) as fd:
            for line in fd:
-                yield line
+                yield line.decode('utf-8')

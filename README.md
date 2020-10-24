@@ -1,11 +1,25 @@
-# Flask, Kafka & ElasticSearch Playground
+# Word Counter
 
 ## Description
-Build a webapi that will POST requests to kafka, consume the requests from kafka and will send the consumned requests to elasticsearch.
-The api will also support get requests from elasicsearch that will return a list of objects that matched a message that was previously sent to elastic.
+Word counter REST API support 2 endpoints.
+1. HTTP POST requests of a stream of text (filepath / url / string) and calcualtes the amount of appearence per word.
+1. The API also supports HTTP GET requests with a word and returns the amount of appearences it has previously calculated from the POST requests. It does that in O(1) efficency from the DB.
 
-### Note 
-if the message string done not exist in elastic, return empty list. 
+### Note
+1. For persistency I use a single small redis cluster that is not optimized for performance. The DB saved the calculated results and increments existing keys based on new data. I use redis pipelines for batch updates (to reduce network round trips) and atomic operations to avoid race conditions (that's why I picked redis).
+1. If the word not exist in the DB, I return zero.
+
+### Assumptions on the input
+1. The input will be sanitied by removing digits and panctuations besides: `-` or `,` - they will be part of the word, meaning: `foo,` in this context will not be a match for `foo`. See additional examples in the code.
+1. The data uniqness is limited, there's a limited amount of words in the english langauge and only ~140k are used so on that I based my assumption. The more uniqness we will have the more we will need to do round trips to the DB which slows the operation.
+1. All the input lines have roughly the same chars, let's assume up to 1k (I tested for 2k). This assumption is based on english text that is rarely this big per line. I can support that as well, but it takes more development time and I prefered not to waste too much time on splitting the file words.
+1. A string (not filepaths or URLs) will always be short, few k's at most, otherwise it doesn't make sense not to pass a file.
+1. Additional points: assumptions, notes, todo's are documented in the code.
+
+### Note
+I tested the URL only with small files, but tested the filepaths with files of 400MB and 3.5GB with ~100 unique words. If a test case fails it's possible to change the relevant constants (currently not in config although it should be) to support the new data, all under controler.py:
+* `LINES_TO_READ = 10000`
+* `MAX_UNIQUE_KEYS = 10000`
 
 ## How to run
 1. `git clone` this repo
@@ -16,44 +30,14 @@ if the message string done not exist in elastic, return empty list.
 
 ## Using
 1. Flask - python HTTP server:
-
-   * `GET localhost:5000/health` - Health check for the web-server.
-   * `POST localhost:5000/message` - Send message with string as raw data to Kafka, then consume kafka and send the data to ElasticSearch.
-   * `GET localhost:5000/message/<msg>` - Get all msg from ElasticSearch.
+   * `GET localhost:5000/health/` - Health check for the web-server.
+   * `POST localhost:5000/v1/words/count/` - Send string / valid url / filepath on the local server, once the operation is completed successfully send HTTP 201 back to the client - I assume the client needs to get the OK confirmation that the operation completed, otherwise I would prefer to send HTTP 202 and process the payload in the background.
+   * `GET localhost:5000/v1/words/<word>/stats/` - Get the word count from redis.
 
 ### API tests via CURL
-1. `curl -X POST http://localhost:5000/message  -H 'content-type: text/plain' -d hello`
-1. `curl -X GET http://localhost:5000/message/hello`
+1. `curl -X POST 'http://127.0.0.1:5000/v1/words/count/' --header 'Content-Type: text/plain' --data-raw 'test_big.txt'` => response(created, 201) - speed depands on the file size, line size, words uniqness and instance on which it will run (downloading an optimized redis cluster will dramatically bost performance).
+1. `curl -X GET 'http://127.0.0.1:5000/v1/words/hello/stats/' --header 'Content-Type: text/plain'` => response(3425252, 200) - O(1) operation done extremly fast.
 
-### POST 5 messages with string "hello" and invoke GET from elastic
-```
-[
-    {
-        "message": "hello",
-        "timestamp": 1553376078.751528
-    },
-    {
-        "message": "hello",
-        "timestamp": 1553370386.6626382
-    },
-    {
-        "message": "hello",
-        "timestamp": 1553382277.687757
-    },
-    {
-        "message": "hello",
-        "timestamp": 1553382381.1357608
-    },
-    {
-        "message": "hello",
-        "timestamp": 1553382391.81499
-    }
-]
-```
-### GET string "missing" from elastic without invoking the string via POST
-```
-[]
-```
-
-### Future Improvements
-Use `confluentinc/kafka-connect-elasticsearch` to send data directly from kafka to ElasticSearch.
+### Future Improvements and considerations
+Use several redis containers linked with a bridge, fix the IO preformance issues of the container (well known network issue that can be deactivates - needs to read about it, it's due to some redis improvments that have negetive effect when running locally on a single cluster).
+If the redis performance does increase dramatically (as I expect) and we are no longer IO bound, consider changing the code to not do in memory words count calculations and dump it to redis once in a while when the memory consumption is too big, instead use redis pipeline while incrementing each seen word by 1 and using multi-thread. This needs to be tested, since in python sometimes the overhead of creating threads is more costly then using a single thread (see GIL).

@@ -36,7 +36,7 @@ class Redis:
         @type key: str
         @param key: key=word to search.
         @rtype: int
-        @return: word search appearance
+        @return: word search num of appearance >= 0 (uint)
         """
         # Assumption: if a key is missing we will return 0
         return int(self.redis_client.get(key) or 0)

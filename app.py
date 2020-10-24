@@ -12,7 +12,7 @@ API_VERSION = 'v1'
 app = Flask(__name__)
 
 @app.route('/')
-@app.route('/health')
+@app.route('/health/')
 def health():
     return 'Strong like a bull!'
 

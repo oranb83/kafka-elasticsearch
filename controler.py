@@ -1,7 +1,7 @@
 import os
 import json
-import logging
-from multiprocessing import Pool
+from concurrent.futures import ThreadPoolExecutor
+from itertools import islice
 
 import validators
 
@@ -10,6 +10,7 @@ from words import Words
 from my_redis import Redis
 
 LINES_TO_READ = 10000
+MAX_UNIQUE_KEYS = 10000
 REDIS = Redis()
 
 
@@ -53,8 +54,15 @@ class Controler:
         """
         lines = self.strategy.read_lines()
         counter = self.strategy.words.frequency
+        # Note:
+        # I tried to use mulit-thread and multi-process to speed things up, but a single thread in
+        # Python gave the best benchmark. Python is not a good choice for this task along with my
+        # redis container choice. The operation here is mostly IO bound, but still in python it
+        # doesn't necesserily mean that you will get optimal results compared to single thread (see
+        # GIL for better understanding the issue). Multi-process might have helped to improved
+        # performance even though we are mostly IO and not CPU bound, but only in case we have
+        # several redis clusters and I only use one.
         for i, line in enumerate(lines):
-            self.strategy.count_words(line)
             # Assumption: to avoid many IO calls to redis I chose to count the words of each
             #   line in memory. That way I only push the aggregated words count into redis once
             #   every X lines. It's more efficent if the words per lines are unique.
@@ -62,10 +70,14 @@ class Controler:
             #   development time and testing so for now I chose every 10k lines assuming
             #   that normal text lines (like in a book) are short.
             # TODO: need to really count the size of the counter object with sys.getsizeof
-            # every X lines to make sure the memory consumption is not too big.
-            if i > 0 and i % LINES_TO_READ and len(counter) > 10000:
-                # TODO: need to add try except and retries in case of connection issues
+            # to make sure the memory consumption is not too high.
+            if i > 0 and i % LINES_TO_READ and len(counter) > MAX_UNIQUE_KEYS:
+                # TODO: need to add try except and retries in case of connection issues, since locally
+                # the issue forces a restart I skipped this for now.
                 REDIS.save(counter)
+                counter.clear()
+
+            self.strategy.count_words(line)
 
         # Leftovers that were not inserted in the above if condition
         REDIS.save(counter)
