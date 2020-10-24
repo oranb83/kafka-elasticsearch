@@ -18,7 +18,7 @@ Word counter REST API support 2 endpoints.
 1. Additional points: assumptions, notes, todo's are documented in the code.
 
 ### Note
-I tested the URL only with small files, but tested the filepaths with files of 400MB and 3.5GB with ~100 unique words. If a test case fails it's possible to change the relevant constants (currently not in config although it should be) to support the new data, all under controler.py:
+I tested the URL only with small files, but tested the filepaths with files of 400MB and 3.5GB, 12GB with ~100 unique words. If a test case fails it's easy to change the relevant constants (currently not in config although it should be) to support the new data, all under controler.py, start by reducing the `MAX_UNIQUE_KEYS`, but make sure you solved the redis bottleneck (it should be in the configuration - needs time to find out what parameters to change):
 * `LINES_TO_READ = 10000`
 * `MAX_UNIQUE_KEYS = 10000`
 

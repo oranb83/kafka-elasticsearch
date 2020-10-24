@@ -2,7 +2,7 @@ import time
 from collections import Counter
 from string import digits, punctuation
 
-REMOVE_CHARS = str.maketrans('', '', digits + punctuation.replace('-', '').replace(',', '').replace("'"))
+REMOVE_CHARS = str.maketrans('', '', digits + punctuation.replace('-', '').replace(',', '').replace("'", ''))
 
 
 class Words:
