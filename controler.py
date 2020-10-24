@@ -1,13 +1,19 @@
 import os
 import json
-import multiprocessing
+import logging
+from multiprocessing import Pool
 
 import validators
 
-from text_handler import UrlHandler, FileHandler, StringHandler, REDIS
+from text_handler import UrlHandler, FileHandler, StringHandler
+from words import Words
+from my_redis import Redis
+
+LINES_TO_READ = 10000
+REDIS = Redis()
 
 
-class ControlerPost:
+class Controler:
     """
     The Controler defines the interface of the view logic.
     """
@@ -46,29 +52,32 @@ class ControlerPost:
         Counts sanitied words in text, file or URL (of txt file).
         """
         lines = self.strategy.read_lines()
-        pool = multiprocessing.Pool(multiprocessing.cpu_count())
-        # print(next(self.strategy.count_words(line)))
-        pool.map(self.strategy.count_words, lines)
-        pool.close()
-        pool.join()
+        counter = self.strategy.words.frequency
+        for i, line in enumerate(lines):
+            self.strategy.count_words(line)
+            # Assumption: to avoid many IO calls to redis I chose to count the words of each
+            #   line in memory. That way I only push the aggregated words count into redis once
+            #   every X lines. It's more efficent if the words per lines are unique.
+            #   Working on an algorithem to decide when to push the data will take more
+            #   development time and testing so for now I chose every 10k lines assuming
+            #   that normal text lines (like in a book) are short.
+            # TODO: need to really count the size of the counter object with sys.getsizeof
+            # every X lines to make sure the memory consumption is not too big.
+            if i > 0 and i % LINES_TO_READ and len(counter) > 10000:
+                # TODO: need to add try except and retries in case of connection issues
+                REDIS.save(counter)
 
+        # Leftovers that were not inserted in the above if condition
+        REDIS.save(counter)
 
-class ControlerSearch:
-    """
-    The Controler defines the interface of the view logic.
-    """
-    def __init__(self, search, strategy=None):
-        """
-        @type search: list<str>
-        @param search: list of words to search.
-        """
-        self.search = search
-
-    def get_stats(self):
+    @staticmethod
+    def get_stats(search):
         """
         This method return word count stats.
 
+        @type search: str
+        @param search: key=word to search.
         @rtype: int
         @return: word search appearance
         """
-        return int(REDIS.get(self.search) or 0)
+        return int(REDIS.get(search) or 0)

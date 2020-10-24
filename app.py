@@ -1,19 +1,19 @@
 import os
+from threading import Thread
 
 from flask import Flask, abort, request
 
-from controler import ControlerPost, ControlerSearch
+from controler import Controler
 
 CONTENT_TYPE_TEXT = 'text/plain'
-SEARCH = 'search'
 DEBUG = os.getenv('DEBUG', False)
 API_VERSION = 'v1'
 
 app = Flask(__name__)
 
-
+@app.route('/')
 @app.route('/health')
-def hello():
+def health():
     return 'Strong like a bull!'
 
 
@@ -26,19 +26,24 @@ def post_message():
     if not text:
         abort(500)
 
-    ControlerPost(text).count_words()
+    # Assumption: this operation can be long (depands on the input), so we will run it on a
+    # different thread in the background.
+    thread = Thread(target=Controler(text).count_words())
+    thread.daemon = True
+    thread.start()
 
+    # Assumption: I would normally run another process in the background and send back HTTP 202
+    # accepted, but I assumed the user needs to be aware that the operation is completed so he can
+    # safely run the stats query.
     return 'created', 201
 
 
-@app.route(f'/{API_VERSION}/words/stats/')
-def get_messages():
-    search = request.args.get(SEARCH)
-
-    if not search:
+@app.route(f'/{API_VERSION}/words/<word>/stats/')
+def get_messages(word):
+    if not word:
         abort(400)
 
-    results = ControlerSearch(search).get_stats()
+    results = Controler.get_stats(word)
 
     return str(results)
 
